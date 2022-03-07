@@ -5,10 +5,10 @@ import lombok.Data;
 
 @Data
 public class RegisterUrlResponse {
-    @JsonProperty("OriginatorConverstionID")
-    private String originatorConverstionId;
-    @JsonProperty("ConversationID")
+    @JsonProperty("ResponseCode")
     private String conversationId;
     @JsonProperty("ResponseDescription")
     private String responseDescription;
+    @JsonProperty("OriginatorCoversationID")
+    private String originatorConverstionId;
 }

@@ -1,6 +1,7 @@
 package com.safaricom.daraja_api.controllers;
 
 import com.safaricom.daraja_api.dtos.responses.AccessTokenResponse;
+import com.safaricom.daraja_api.dtos.responses.RegisterUrlResponse;
 import com.safaricom.daraja_api.services.DarajaApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,5 +20,10 @@ public class MpesaController {
     @GetMapping(path = "/token", produces = "application/json")
     public ResponseEntity<AccessTokenResponse> getAccessToken() {
         return ResponseEntity.ok(darajaApi.getAccessToken());
+    }
+
+    @GetMapping(path="/register-url", produces="application/json")
+    public ResponseEntity<RegisterUrlResponse> registerUrl(){
+        return ResponseEntity.ok(darajaApi.registerUrl());
     }
 }

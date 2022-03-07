@@ -2,16 +2,16 @@ package com.safaricom.daraja_api.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safaricom.daraja_api.config.MpesaConfiguration;
+import com.safaricom.daraja_api.dtos.requests.RegisterUrlRequest;
 import com.safaricom.daraja_api.dtos.responses.AccessTokenResponse;
 import com.safaricom.daraja_api.dtos.responses.RegisterUrlResponse;
 import com.safaricom.daraja_api.utils.HelperUtility;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static com.safaricom.daraja_api.utils.Constants.*;
 
@@ -57,6 +57,32 @@ public class DarajaApiImpl implements DarajaApi {
 
     @Override
     public RegisterUrlResponse registerUrl() {
-        return null;
+        AccessTokenResponse accessTokenResponse = getAccessToken();
+        RegisterUrlRequest registerUrlRequest = new RegisterUrlRequest();
+        registerUrlRequest.setValidationUrl(mpesaConfiguration.getValidationURL());
+        registerUrlRequest.setConfirmationUrl(mpesaConfiguration.getConfirmationURL());
+        registerUrlRequest.setResponseType(mpesaConfiguration.getResponseType());
+        registerUrlRequest.setShortCode(mpesaConfiguration.getShortCode());
+
+        RequestBody requestBody = RequestBody.create(JSON_MEDIA_TYPE,
+                Objects.requireNonNull(HelperUtility.toJson(registerUrlRequest)));
+
+        Request request = new Request.Builder()
+                .url(mpesaConfiguration.getRegisterUrlEndpoint())
+                .post(requestBody)
+                .addHeader(
+                        AUTHORIZATION_HEADER_STRING,
+                        String.format("%s %s",BEARER_AUTH_STRING, accessTokenResponse.getAccessToken())
+                ).build();
+
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            assert response.body() != null;
+            //Deserialize response body to 'RegisterUrlResponse' Java object
+            return objectMapper.readValue(response.body().string(), RegisterUrlResponse.class);
+        } catch (IOException e) {
+            log.error(String.format("Could not register url >> %s", e.getLocalizedMessage()));
+            return null;
+        }
     }
 }
