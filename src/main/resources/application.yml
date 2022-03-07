@@ -13,7 +13,7 @@ mpesa:
     validationURL: https://e6c0-197-180-22-151.ngrok.io/mobile-money/validation
     responseType: Completed
     b2c-transaction-endpoint: https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest
-    b2c-result-url: https://adf94cda8cd2.ngrok.io/mobile-money/b2c-transaction-result
-    b2c-queue-timeout-url: https://adf94cda8cd2.ngrok.io/mobile-money/b2c-queue-timeout
+    b2c-result-url: https://e6c0-197-180-22-151.ngrok.io/mobile-money/b2c-transaction-result
+    b2c-queue-timeout-url: https://e6c0-197-180-22-151.ngrok.io/mobile-money/b2c-queue-timeout
     b2c-initiator-name: apiop37
     b2c-initiator-password: Safaricom3021#
