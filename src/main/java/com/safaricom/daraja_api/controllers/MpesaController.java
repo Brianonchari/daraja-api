@@ -40,5 +40,4 @@ public class MpesaController {
     ) {
         return ResponseEntity.ok(darajaApi.simulateC2BTransaction(simulateTransactionRequest));
     }
-
 }
