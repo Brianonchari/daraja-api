@@ -2,14 +2,8 @@ package com.safaricom.daraja_api.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safaricom.daraja_api.config.MpesaConfiguration;
-import com.safaricom.daraja_api.dtos.requests.B2CTransactionRequest;
-import com.safaricom.daraja_api.dtos.requests.InternalB2CTransactionRequest;
-import com.safaricom.daraja_api.dtos.requests.RegisterUrlRequest;
-import com.safaricom.daraja_api.dtos.requests.SimulateC2BTransactionRequest;
-import com.safaricom.daraja_api.dtos.responses.AccessTokenResponse;
-import com.safaricom.daraja_api.dtos.responses.B2CTransactionResponse;
-import com.safaricom.daraja_api.dtos.responses.RegisterUrlResponse;
-import com.safaricom.daraja_api.dtos.responses.SimulateC2BTransactionResponse;
+import com.safaricom.daraja_api.dtos.requests.*;
+import com.safaricom.daraja_api.dtos.responses.*;
 import com.safaricom.daraja_api.utils.HelperUtility;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -149,6 +143,49 @@ public class DarajaApiImpl implements DarajaApi {
             return objectMapper.readValue(response.body().string(), B2CTransactionResponse.class);
         } catch (IOException e) {
             log.error(String.format("Could not perfom B2C Transaction,>>> %s", e.getLocalizedMessage()));
+            return null;
+        }
+    }
+
+    @Override
+    public TransactionStatusResponse getTransactionStatus(
+            InternalTransactionStatusRequest internalTransactionStatusRequest
+    ) {
+        AccessTokenResponse accessTokenResponse = getAccessToken();
+        log.info(String.format("ACCESS TOKEN --> %s", accessTokenResponse));
+        TransactionStatusRequest transactionStatusRequest = new TransactionStatusRequest();
+        transactionStatusRequest.setInitiator(mpesaConfiguration.getB2cInitiatorName());
+        transactionStatusRequest.setSecurityCredential(
+                HelperUtility.getSecurityCredentials(mpesaConfiguration.getB2cInitiatorPassword())
+        );
+        transactionStatusRequest.setCommandID(TRANSACTION_STATUS_QUERY_COMMAND);
+        transactionStatusRequest.setPartyA(mpesaConfiguration.getShortCode());
+        transactionStatusRequest.setIdentifierType(SHORT_CODE_IDENTIFIER);
+        transactionStatusRequest.setResultURL(mpesaConfiguration.getB2cResultUrl());
+        transactionStatusRequest.setQueueTimeOutURL(mpesaConfiguration.getB2cQueueTimeoutUrl());
+        transactionStatusRequest.setRemarks("Remarks");
+        transactionStatusRequest.setOccasion("Disbursement");
+
+
+        RequestBody body = RequestBody.create(
+                JSON_MEDIA_TYPE,
+                Objects.requireNonNull(HelperUtility.toJson(transactionStatusRequest))
+        );
+
+        Request request = new Request.Builder()
+                .url(mpesaConfiguration.getTransactionResultUrl())
+                .post(body)
+                .addHeader(AUTHORIZATION_HEADER_STRING,
+                        String.format("%s %s", BEARER_AUTH_STRING, accessTokenResponse.getAccessToken()))
+                .build();
+
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            assert response.body() != null;
+            //Deserialize to Java object;
+            return objectMapper.readValue(response.body().toString(), TransactionStatusResponse.class);
+        } catch (IOException e) {
+            log.error(String.format("Unable to get transaction status, -> %s",e.getLocalizedMessage()));
             return null;
         }
     }

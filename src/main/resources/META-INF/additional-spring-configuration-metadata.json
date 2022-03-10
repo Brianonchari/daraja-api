@@ -64,5 +64,11 @@
       "name": "mpesa.daraja.b2c-initiator-password",
       "type": "java.lang.String",
       "description": "Description for mpesa.daraja.b2c-initiator-password."
+    },
+    {
+      "name": "mpesa.daraja.transactionResultUrl",
+      "type": "java.lang.String",
+      "description": "Description for mpesa.daraja.transactionResultUrl."
     }
-  ] }
+  ]
+}

@@ -3,6 +3,7 @@ package com.safaricom.daraja_api.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safaricom.daraja_api.dtos.requests.InternalB2CTransactionRequest;
+import com.safaricom.daraja_api.dtos.requests.InternalTransactionStatusRequest;
 import com.safaricom.daraja_api.dtos.requests.SimulateC2BTransactionRequest;
 import com.safaricom.daraja_api.dtos.responses.*;
 import com.safaricom.daraja_api.services.DarajaApi;
@@ -68,5 +69,12 @@ public class MpesaController {
             @RequestBody InternalB2CTransactionRequest internalB2CTransactionRequest
     ) {
         return ResponseEntity.ok(darajaApi.performB2cTransaction(internalB2CTransactionRequest));
+    }
+
+    @PostMapping(path = "transaction-result", produces = "application/json")
+    public ResponseEntity<TransactionStatusResponse> getTransactionStatus(
+            @RequestBody InternalTransactionStatusRequest internalTransactionStatusRequest
+            ){
+        return ResponseEntity.ok(darajaApi.getTransactionStatus(internalTransactionStatusRequest));
     }
 }
