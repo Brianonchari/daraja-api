@@ -4,15 +4,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class SimulateC2BTransactionRequest {
-    @JsonProperty("ShortCode")
-    private String shortCode;
-    @JsonProperty("Msisdn")
-    private String msisdn;
-    @JsonProperty("BillRefNumber")
-    private String billRefNumber;
+public class InternalB2CTransactionRequest {
+    @JsonProperty("Remarks")
+    private String remarks;
+
     @JsonProperty("Amount")
     private String amount;
+
+    @JsonProperty("Occassion")
+    private String occassion;
+
     @JsonProperty("CommandID")
     private String commandID;
+
+    @JsonProperty("PartyB")
+    private String partyB;
 }

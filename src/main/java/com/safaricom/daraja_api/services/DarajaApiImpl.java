@@ -2,9 +2,12 @@ package com.safaricom.daraja_api.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safaricom.daraja_api.config.MpesaConfiguration;
+import com.safaricom.daraja_api.dtos.requests.B2CTransactionRequest;
+import com.safaricom.daraja_api.dtos.requests.InternalB2CTransactionRequest;
 import com.safaricom.daraja_api.dtos.requests.RegisterUrlRequest;
 import com.safaricom.daraja_api.dtos.requests.SimulateC2BTransactionRequest;
 import com.safaricom.daraja_api.dtos.responses.AccessTokenResponse;
+import com.safaricom.daraja_api.dtos.responses.B2CTransactionResponse;
 import com.safaricom.daraja_api.dtos.responses.RegisterUrlResponse;
 import com.safaricom.daraja_api.dtos.responses.SimulateC2BTransactionResponse;
 import com.safaricom.daraja_api.utils.HelperUtility;
@@ -91,25 +94,61 @@ public class DarajaApiImpl implements DarajaApi {
     @Override
     public SimulateC2BTransactionResponse simulateC2BTransaction(SimulateC2BTransactionRequest simulateTransactionRequest) {
         AccessTokenResponse accessTokenResponse = getAccessToken();
-        RequestBody body = RequestBody.create(
-                JSON_MEDIA_TYPE,
-                Objects.requireNonNull(HelperUtility.toJson(simulateTransactionRequest))
-        );
+        RequestBody body = RequestBody.create(JSON_MEDIA_TYPE,
+                Objects.requireNonNull(HelperUtility.toJson(simulateTransactionRequest)));
 
         Request request = new Request.Builder()
                 .url(mpesaConfiguration.getSimulateTransactionEndpoint())
                 .post(body)
-                .addHeader(AUTHORIZATION_HEADER_STRING,String.format(
-                        "%s %s",BEARER_AUTH_STRING,accessTokenResponse.getAccessToken()))
+                .addHeader(AUTHORIZATION_HEADER_STRING, String.format("%s %s", BEARER_AUTH_STRING, accessTokenResponse.getAccessToken()))
                 .build();
 
-        try{
+        try {
             Response response = okHttpClient.newCall(request).execute();
-            assert response.body()!=null;
-            //Deserialize response to Java object 'SimulateC2BTransactionResponse' class
-            return objectMapper.readValue(response.body().toString(),SimulateC2BTransactionResponse.class);
-        }catch(IOException e){
-            log.error(String.format("Unable to simulate transaction -> %s",e.getLocalizedMessage()));
+            assert response.body() != null;
+
+            return objectMapper.readValue(response.body().string(), SimulateC2BTransactionResponse.class);
+        } catch (IOException e) {
+            log.error(String.format("Could not simulate C2B transaction -> %s", e.getLocalizedMessage()));
+            return null;
+        }
+    }
+
+    @Override
+    public B2CTransactionResponse performB2cTransaction(InternalB2CTransactionRequest internalB2CTransactionRequest) {
+        AccessTokenResponse accessTokenResponse = getAccessToken();
+        log.info("===Access Token ===");
+        log.info(String.format("%s", accessTokenResponse.getAccessToken()));
+        B2CTransactionRequest b2CTransactionRequest = new B2CTransactionRequest();
+        b2CTransactionRequest.setCommandID(internalB2CTransactionRequest.getCommandID());
+        b2CTransactionRequest.setAmount(internalB2CTransactionRequest.getAmount());
+        b2CTransactionRequest.setPartyB(internalB2CTransactionRequest.getPartyB());
+        b2CTransactionRequest.setRemarks(internalB2CTransactionRequest.getRemarks());
+        b2CTransactionRequest.setOccassion(internalB2CTransactionRequest.getOccassion());
+
+        b2CTransactionRequest.setSecurityCredential(HelperUtility.getSecurityCredentials(mpesaConfiguration.getB2cInitiatorPassword()));
+        log.info(String.format("Security Credentials:  -->%s", b2CTransactionRequest.getSecurityCredential()));
+        b2CTransactionRequest.setResultURL(mpesaConfiguration.getB2cResultUrl());
+        b2CTransactionRequest.setQueueTimeOutURL(mpesaConfiguration.getB2cQueueTimeoutUrl());
+        b2CTransactionRequest.setInitiatorName(mpesaConfiguration.getB2cInitiatorName());
+        b2CTransactionRequest.setPartyA(mpesaConfiguration.getShortCode());
+
+        RequestBody body = RequestBody.create(JSON_MEDIA_TYPE,
+                Objects.requireNonNull(HelperUtility.toJson(b2CTransactionRequest)));
+        Request request = new Request.Builder()
+                .url(mpesaConfiguration.getB2cTransactionEndpoint())
+                .post(body)
+                .addHeader(AUTHORIZATION_HEADER_STRING,
+                        String.format("%s %s", BEARER_AUTH_STRING, accessTokenResponse.getAccessToken()))
+                .build();
+
+        try {
+            Response response = okHttpClient.newCall(request).execute();
+            assert response.body() != null;
+
+            return objectMapper.readValue(response.body().string(), B2CTransactionResponse.class);
+        } catch (IOException e) {
+            log.error(String.format("Could not perfom B2C Transaction,>>> %s", e.getLocalizedMessage()));
             return null;
         }
     }
