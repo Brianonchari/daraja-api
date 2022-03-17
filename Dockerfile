@@ -1,5 +1,6 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:11
 MAINTAINER Brian Onchari
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+RUN mkdir /daraja-api
+COPY target/daraja_api-0.0.1-SNAPSHOT.jar/ /daraja-api
+WORKDIR /daraja-api
+CMD java -classpath src/main/java/com/safaricom/daraja_api/DarajaApiApplication.java
